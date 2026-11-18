@@ -1,0 +1,54 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+
+pr: none
+
+stages:
+- stage: Deploy_DTA
+  displayName: Deploy to DTA
+  variables:
+  - group: DTA ask-my-data
+  jobs:
+  - deployment: DeployResourceGroup
+    displayName: Deploy resource group
+    pool:
+      name: DAS - Continuous Deployment Agents
+    environment: DTA
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: none
+          - checkout: self
+          - task: AzureCLI@2
+            displayName: Deploy DTA resource group
+            inputs:
+              azureSubscription: SFA-DAS-DevTest-ARM
+              scriptType: pscore
+              scriptLocation: inlineScript
+              workingDirectory: $(Build.SourcesDirectory)
+              inlineScript: |
+                $deploymentParameters = @{
+                  resourceEnvironmentName = @{ value = $env:RESOURCE_ENVIRONMENT_NAME }
+                  serviceName = @{ value = $env:SERVICE_NAME }
+                  resourceGroupLocation = @{ value = $env:RESOURCE_GROUP_LOCATION }
+                  tags = @{ value = (ConvertFrom-Json -InputObject $env:RESOURCE_GROUP_TAGS -AsHashtable) }
+                }
+
+                $parameterFile = New-TemporaryFile
+                try {
+                  $deploymentParameters | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $parameterFile.FullName -Encoding utf8
+                  az deployment sub create --location $env:RESOURCE_GROUP_LOCATION --template-file azure/resource-group.json --parameters $parameterFile.FullName
+                  exit $LASTEXITCODE
+                }
+                finally {
+                  Remove-Item -LiteralPath $parameterFile.FullName
+                }
+            env:
+              RESOURCE_ENVIRONMENT_NAME: $(ResourceEnvironmentName)
+              SERVICE_NAME: $(ServiceName)
+              RESOURCE_GROUP_LOCATION: $(ResourceGroupLocation)
+              RESOURCE_GROUP_TAGS: $(Tags)
