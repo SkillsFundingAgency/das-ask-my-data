@@ -1,0 +1,34 @@
+parameters:
+- name: ServiceConnection
+  type: string
+- name: Environment
+  type: string
+
+jobs:
+- deployment: DeployResourceGroup
+  displayName: Deploy resource group
+  pool:
+    name: DAS - Continuous Deployment Agents
+  environment: ${{ parameters.Environment }}
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - download: none
+        - checkout: self
+          path: ask-my-data
+        - template: azure-pipelines-templates/deploy/step/wait-azure-devops-deployment.yml@das-platform-building-blocks
+          parameters:
+            EnvironmentId: $(Environment.Id)
+            PipelineName: $(Build.DefinitionName)
+            RunId: $(Build.BuildId)
+        - template: azure-pipelines-templates/deploy/step/arm-deploy.yml@das-platform-building-blocks
+          parameters:
+            ServiceConnection: ${{ parameters.ServiceConnection }}
+            SubscriptionId: $(SubscriptionId)
+            Location: $(ResourceGroupLocation)
+            Environment: ${{ parameters.Environment }}
+            Scope: Subscription
+            TemplatePath: $(Pipeline.Workspace)/ask-my-data/azure/template.json
+            ParametersPath: $(Pipeline.Workspace)/ask-my-data/azure/template.parameters.json
+            IsMultiRepoCheckout: true

@@ -1,0 +1,35 @@
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+
+pr: none
+
+variables:
+- group: Release Management Resources
+
+resources:
+  repositories:
+  - repository: das-platform-building-blocks
+    type: github
+    name: SkillsFundingAgency/das-platform-building-blocks
+    ref: refs/tags/4.0.6
+    endpoint: SkillsFundingAgency
+  - repository: das-platform-automation
+    type: github
+    name: SkillsFundingAgency/das-platform-automation
+    ref: refs/tags/5.1.27
+    endpoint: SkillsFundingAgency
+
+stages:
+- stage: Deploy_DTA
+  displayName: Deploy to DTA
+  variables:
+  - group: DevTest Management Resources
+  - group: DTA ask-my-data
+  jobs:
+  - template: pipeline-templates/deploy.yml
+    parameters:
+      ServiceConnection: SFA-DAS-DevTest-ARM
+      Environment: DTA
