@@ -16,7 +16,6 @@ jobs:
         steps:
         - download: none
         - checkout: self
-          path: s/ask-my-data
         - template: azure-pipelines-templates/deploy/step/wait-azure-devops-deployment.yml@das-platform-building-blocks
           parameters:
             EnvironmentId: $(Environment.Id)
@@ -30,5 +29,5 @@ jobs:
             Environment: ${{ parameters.Environment }}
             Scope: Subscription
             TemplatePath: $(Pipeline.Workspace)/s/ask-my-data/azure/template.json
-            ParametersPath: $(Agent.TempDirectory)/ask-my-data-resource-group.parameters.json
+            ParametersPath: $(Pipeline.Workspace)/s/ask-my-data/azure/template.parameters.json
             IsMultiRepoCheckout: true

@@ -17,9 +17,10 @@ templates come from `das-platform-building-blocks` and use scripts from
 `das-platform-automation` to check deployment history, generate the ARM parameter
 file and expose the ARM output as a pipeline variable.
 
-The pipeline needs access to the `DTA` environment, the
-`DAS - Continuous Deployment Agents` pool, the `DTA ask-my-data` variable group
-and the `SkillsFundingAgency` GitHub service connection for both shared
+The pipeline needs access to the `Release Management Resources`,
+`DevTest Management Resources` and `DTA ask-my-data` variable groups, the `DTA`
+environment, the `DAS - Continuous Deployment Agents` pool and the
+`SkillsFundingAgency` GitHub service connection for both shared
 repositories. The pipeline identity needs permission to read DTA deployment
 records. The agent needs PowerShell 7. The `SFA-DAS-DevTest-ARM` service connection
 needs permission to run subscription-scope ARM deployments and create or update
